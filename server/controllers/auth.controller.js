@@ -98,6 +98,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
+        isAdmin: false,
       },
       process.env.JWT_SECRET,
       { expiresIn: age }
@@ -116,8 +117,9 @@ export const login = async (req, res) => {
           id: user.id,
           username: user.username,
           email: user.email,
-          token,
+          avatar: user.avatar,
         },
+        token,
       });
   } catch (error) {
     console.log("Error in login controller");

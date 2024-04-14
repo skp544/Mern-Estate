@@ -3,7 +3,7 @@
   display: flex;
 
   .formContainer {
-    flex:3;
+    flex: 3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -11,6 +11,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      width: 75%;
 
       .item {
         display: flex;
@@ -24,6 +25,7 @@
           padding: 20px;
           border-radius: 5px;
           border: 1px solid gray;
+          width: 100%;
         }
       }
       button {
@@ -47,7 +49,7 @@
     align-items: center;
     justify-content: center;
 
-    .avatar{
+    .avatar {
       width: 50%;
       object-fit: cover;
     }

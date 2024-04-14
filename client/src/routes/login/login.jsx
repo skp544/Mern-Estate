@@ -2,11 +2,13 @@ import { login } from "../../api/auth";
 import "./login.scss";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { updateUser } = useContext(AuthContext);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -17,16 +19,14 @@ function Login() {
     setIsLoading(true);
     const response = await login({ username, password });
 
-    console.log(response);
-
     setIsLoading(false);
     if (!response.success) {
       return toast.error(response.message);
     }
-
-    localStorage.setItem("user", JSON.stringify(response.data));
+    updateUser(response.data);
+    localStorage.setItem("token", response.token);
     toast.success(response.message);
-    // navigate("/");
+    navigate("/");
   };
   return (
     <div className="login">

@@ -7,3 +7,7 @@ export const catchError = (error) => {
 
   return { error: error.message || error };
 };
+
+export const getToken = () => {
+  return localStorage.getItem("token");
+};

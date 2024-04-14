@@ -4,9 +4,13 @@ import List from "../../components/list/List";
 import "./profilePage.scss";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import { useContext } from "react";
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const { updateUser, currentUser } = useContext(AuthContext);
+
   const handleLogout = async () => {
     const response = await logout();
 
@@ -16,30 +20,32 @@ function ProfilePage() {
 
     toast.success(response.message);
 
-    localStorage.removeItem("user");
+    updateUser(null);
+
+    localStorage.removeItem("token");
     navigate("/login");
   };
+
   return (
     <div className="profilePage">
       <div className="details">
         <div className="wrapper">
           <div className="title">
             <h1>User Information</h1>
-            <button>Update Profile</button>
+            <button onClick={() => navigate("/profile/update")}>
+              Update Profile
+            </button>
           </div>
           <div className="info">
             <span>
               Avatar:
-              <img
-                src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                alt=""
-              />
+              <img src={currentUser?.avatar || "/noavatar.jpg"} alt="user" />
             </span>
             <span>
-              Username: <b>John Doe</b>
+              Username: <b>{currentUser?.username}</b>
             </span>
             <span>
-              E-mail: <b>john@gmail.com</b>
+              E-mail: <b>{currentUser?.email}</b>
             </span>
             <button onClick={handleLogout}>Logout</button>
           </div>
