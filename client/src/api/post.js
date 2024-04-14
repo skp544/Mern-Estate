@@ -16,3 +16,13 @@ export const createPost = async (post) => {
     return catchError(error);
   }
 };
+
+export const getPost = async (id) => {
+  try {
+    const { data } = await axios.get(`${POSTS_URL}/${id}`);
+
+    return data;
+  } catch (error) {
+    return catchError(error);
+  }
+};
