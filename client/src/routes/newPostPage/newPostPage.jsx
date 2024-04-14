@@ -1,12 +1,69 @@
+import { useState } from "react";
 import "./newPostPage.scss";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { createPost } from "../../api/post";
+import toast from "react-hot-toast";
+import UploadWidget from "../../components/uploadWidget/UploadWidget";
+import { useNavigate } from "react-router-dom";
 
 function NewPostPage() {
+  const [value, setValue] = useState("");
+  const [images, setImages] = useState([]);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    const inputs = Object.fromEntries(formData);
+
+    setIsLoading(true);
+    const response = await createPost({
+      postData: {
+        title: inputs.title,
+        price: parseInt(inputs.price),
+        address: inputs.address,
+        city: inputs.city,
+        bedroom: parseInt(inputs.bedroom),
+        bathroom: parseInt(inputs.bathroom),
+        type: inputs.type,
+        property: inputs.property,
+        latitude: inputs.latitude,
+        longitude: inputs.longitude,
+        // images: images,
+      },
+      postDetail: {
+        desc: value,
+        utilities: inputs.utilities,
+        pet: inputs.pet,
+        income: inputs.income,
+        size: parseInt(inputs.size),
+        school: parseInt(inputs.school),
+        bus: parseInt(inputs.bus),
+        restaurant: parseInt(inputs.restaurant),
+      },
+    });
+
+    setIsLoading(false);
+
+    if (!response.success) {
+      return toast.error(response.message);
+    }
+    console.log(response.data.id);
+
+    toast.success(response.message);
+    navigate(`/${response.data.id}`);
+  };
+
   return (
     <div className="newPostPage">
       <div className="formContainer">
         <h1>Add New Post</h1>
         <div className="wrapper">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="item">
               <label htmlFor="title">Title</label>
               <input id="title" name="title" type="text" />
@@ -21,6 +78,7 @@ function NewPostPage() {
             </div>
             <div className="item description">
               <label htmlFor="desc">Description</label>
+              <ReactQuill theme="snow" value={value} onChange={setValue} />
             </div>
             <div className="item">
               <label htmlFor="city">City</label>
@@ -100,11 +158,27 @@ function NewPostPage() {
               <label htmlFor="restaurant">Restaurant</label>
               <input min={0} id="restaurant" name="restaurant" type="number" />
             </div>
-            <button className="sendButton">Add</button>
+            <button className="sendButton" disabled={isLoading}>
+              {isLoading ? "Adding" : "Add"}
+            </button>
           </form>
         </div>
       </div>
-      <div className="sideContainer"></div>
+      <div className="sideContainer">
+        {images.map((image, i) => (
+          <img src={image} key={i} alt="image_url" />
+        ))}
+        <UploadWidget
+          uwConfig={{
+            cloudName: "dhdikvy2r",
+            uploadPreset: "esatet",
+            multiple: true,
+            maxImageFileSize: 2000000,
+            folder: "posts",
+          }}
+          setState={setImages}
+        />
+      </div>
     </div>
   );
 }
