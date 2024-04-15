@@ -33,7 +33,7 @@ function NewPostPage() {
         property: inputs.property,
         latitude: inputs.latitude,
         longitude: inputs.longitude,
-        // images: images,
+        images: images,
       },
       postDetail: {
         desc: value,
