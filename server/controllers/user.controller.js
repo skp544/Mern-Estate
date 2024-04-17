@@ -209,3 +209,34 @@ export const profilePosts = async (req, res) => {
       .json({ success: false, message: "Internal Server Error" });
   }
 };
+
+export const getNotificationNumber = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const number = await prisma.chat.count({
+      where: {
+        userIDs: {
+          hasSome: [userId],
+        },
+        NOT: {
+          seenBy: {
+            hasSome: [userId],
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Notification number fetched",
+      number,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

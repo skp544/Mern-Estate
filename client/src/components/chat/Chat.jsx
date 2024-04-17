@@ -1,20 +1,35 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import "./chat.scss";
 import { AuthContext } from "../../context/AuthContext";
-import { createMessage, getChat } from "../../api/chat";
+import { createMessage, getChat, readChat } from "../../api/chat";
 import toast from "react-hot-toast";
 import { format } from "timeago.js";
+import { SocketContext } from "../../context/SocketContext";
+import { useNotificationStore } from "../../lib/notificationStore";
 
 function Chat({ chats }) {
   const [chat, setChat] = useState(null);
   const { currentUser } = useContext(AuthContext);
+  const { socket } = useContext(SocketContext);
   const [loading, setLoading] = useState(false);
+
+  const messageEndRef = useRef();
+  const decrease = useNotificationStore((state) => state.decrease);
+
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat]);
 
   const handleOpenChat = async (id, reciever) => {
     setLoading(true);
     const res = await getChat(id);
 
     setLoading(false);
+
+    if (res.chat.seenBy.includes(currentUser.id)) {
+      decrease();
+    }
+
     if (!res.success) {
       return toast.error(res.message);
     }
@@ -33,9 +48,35 @@ function Chat({ chats }) {
     const res = await createMessage(chat.id, text);
 
     setChat((prev) => ({ ...prev, messages: [...prev.messages, res.message] }));
-
     e.target.reset();
+    socket.emit("sendMessage", {
+      recieverId: chat.reciever.id,
+      data: res.data,
+    });
   };
+
+  useEffect(() => {
+    const read = async () => {
+      const res = await readChat(chat.id);
+
+      if (!res.success) {
+        return toast.error(res.message);
+      }
+    };
+
+    if (socket && chat) {
+      socket.on("getMessage", (data) => {
+        if (chat.id === data.chatId) {
+          setChat((prev) => ({ ...prev, messages: [...prev.messages, data] }));
+          read();
+        }
+      });
+    }
+
+    return () => {
+      socket.off("getMessage");
+    };
+  }, [socket, chat]);
 
   return (
     <div className="chat">
@@ -47,9 +88,10 @@ function Chat({ chats }) {
             key={c.id}
             className="message"
             style={{
-              backgroundColor: c.seenBy.includes(currentUser.id)
-                ? "white"
-                : "#fecd514e",
+              backgroundColor:
+                c.seenBy.includes(currentUser.id) || chat?.id === c.id
+                  ? "white"
+                  : "#fecd514e",
             }}
             onClick={() => handleOpenChat(c.id, c.reciever.id)}
           >
@@ -58,47 +100,6 @@ function Chat({ chats }) {
             <p>{c.lastMessage}</p>
           </div>
         ))}
-
-        <div className="message">
-          <img
-            src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            alt=""
-          />
-          <span>John Doe</span>
-          <p>Lorem ipsum dolor sit amet...</p>
-        </div>
-        <div className="message">
-          <img
-            src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            alt=""
-          />
-          <span>John Doe</span>
-          <p>Lorem ipsum dolor sit amet...</p>
-        </div>
-        <div className="message">
-          <img
-            src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            alt=""
-          />
-          <span>John Doe</span>
-          <p>Lorem ipsum dolor sit amet...</p>
-        </div>
-        <div className="message">
-          <img
-            src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            alt=""
-          />
-          <span>John Doe</span>
-          <p>Lorem ipsum dolor sit amet...</p>
-        </div>
-        <div className="message">
-          <img
-            src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            alt=""
-          />
-          <span>John Doe</span>
-          <p>Lorem ipsum dolor sit amet...</p>
-        </div>
       </div>
       {chat && (
         <div className="chatBox">
@@ -129,10 +130,7 @@ function Chat({ chats }) {
                 <span>{format(message.createdAt)}</span>
               </div>
             ))}
-            <div className="chatMessage own">
-              <p>Lorem ipsum dolor sit amet</p>
-              <span>1 hour ago</span>
-            </div>
+            <div ref={messageEndRef}></div>
           </div>
           <form onSubmit={handleSubmit} className="bottom">
             <textarea name="text"></textarea>

@@ -51,3 +51,17 @@ export const savePost = async (postId) => {
     return catchError(error);
   }
 };
+
+export const getNotificationNumber = async () => {
+  try {
+    const { data } = await axios.get(`${USERS_URL}/notification`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    return catchError(error);
+  }
+};

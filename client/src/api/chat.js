@@ -37,3 +37,17 @@ export const createMessage = async (id, text) => {
     return catchError(error);
   }
 };
+
+export const readChat = async (id) => {
+  try {
+    const { data } = await axios.put(`${CHAT_URL}/read/${id}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    return catchError(error);
+  }
+};
