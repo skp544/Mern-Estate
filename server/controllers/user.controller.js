@@ -14,6 +14,7 @@ export const getUsers = async (req, res) => {
     });
   }
 };
+
 export const getUser = async (req, res) => {
   try {
     const id = req.params.id;
@@ -49,6 +50,7 @@ export const getUser = async (req, res) => {
     });
   }
 };
+
 export const updateUser = async (req, res) => {
   try {
     const id = req.params.id;
@@ -97,6 +99,7 @@ export const updateUser = async (req, res) => {
     });
   }
 };
+
 export const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
@@ -125,5 +128,84 @@ export const deleteUser = async (req, res) => {
       success: false,
       message: "Internal Server Error",
     });
+  }
+};
+
+export const savePost = async (req, res) => {
+  try {
+    const postId = req.body.postId;
+    const userId = req.userId;
+
+    const savedPost = await prisma.savedPost.findUnique({
+      where: {
+        userId_postId: {
+          userId,
+          postId,
+        },
+      },
+    });
+
+    if (savedPost) {
+      await prisma.savedPost.delete({
+        where: {
+          id: savedPost.id,
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Post unsaved",
+      });
+    } else {
+      await prisma.savedPost.create({
+        data: {
+          postId,
+          userId,
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Post saved",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const profilePosts = async (req, res) => {
+  const userId = req.userId;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "Missing userId" });
+  }
+
+  try {
+    const userPosts = await prisma.post.findMany({
+      where: { userId },
+    });
+
+    const saved = await prisma.savedPost.findMany({
+      where: { userId },
+      include: {
+        post: true,
+      },
+    });
+
+    const savedPosts = saved.map((item) => item.post);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Posts fetched", userPosts, savedPosts });
+  } catch (err) {
+    console.error("Error fetching profile posts:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };

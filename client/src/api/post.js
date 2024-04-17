@@ -1,4 +1,4 @@
-import { POSTS_URL } from "./client";
+import { POSTS_URL, USERS_URL } from "./client";
 import axios from "axios";
 import { catchError, getToken } from "../lib/helper";
 
@@ -31,7 +31,6 @@ export const getPost = async (id) => {
 export const getPosts = async (query) => {
   try {
     const { data } = await axios.get(`${POSTS_URL}?${query}`);
-    console.log(data);
 
     return data;
   } catch (error) {

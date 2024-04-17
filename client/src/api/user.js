@@ -17,3 +17,37 @@ export const update = async (id, formData) => {
     return catchError(error);
   }
 };
+
+export const profilePosts = async () => {
+  try {
+    console.log(getToken());
+
+    const { data } = await axios.get(`${USERS_URL}/profile-posts`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    return catchError(error);
+  }
+};
+
+export const savePost = async (postId) => {
+  try {
+    const { data } = await axios.post(
+      `${USERS_URL}/save`,
+      { postId },
+      {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      }
+    );
+
+    return data;
+  } catch (error) {
+    return catchError(error);
+  }
+};

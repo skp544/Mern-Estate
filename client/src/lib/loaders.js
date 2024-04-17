@@ -13,3 +13,5 @@ export const listPageLoader = async ({ request, params }) => {
 
   return res.data;
 };
+
+export const profilePageLoader = async ({ request, params }) => {};

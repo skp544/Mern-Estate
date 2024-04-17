@@ -22,6 +22,7 @@ export const verifyToken = (req, res, next) => {
         }
 
         req.userId = payload.id;
+
         next();
       }
     );

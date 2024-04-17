@@ -1,11 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./card.scss";
+import toast from "react-hot-toast";
+import { savePost } from "../../api/user";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 function Card({ item }) {
   return (
     <div className="card">
       <Link to={`/${item.id}`} className="imageContainer">
-        <img src={item.images[0]} alt="image" />
+        {item.images?.length > 0 ? (
+          <img src={item.images[0]} alt="image" />
+        ) : (
+          <h2>No Image</h2>
+        )}
       </Link>
       <div className="textContainer">
         <h2 className="title">
@@ -28,9 +36,6 @@ function Card({ item }) {
             </div>
           </div>
           <div className="icons">
-            <div className="icon">
-              <img src="/save.png" alt="" />
-            </div>
             <div className="icon">
               <img src="/chat.png" alt="" />
             </div>

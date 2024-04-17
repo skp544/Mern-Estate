@@ -5,11 +5,30 @@ import "./profilePage.scss";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
+import { profilePosts } from "../../api/user";
 
 function ProfilePage() {
   const navigate = useNavigate();
   const { updateUser, currentUser } = useContext(AuthContext);
+  const [userPosts, setUserPosts] = useState([]);
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    const response = await profilePosts();
+
+    setLoading(false);
+
+    if (!response.success) {
+      return toast.error(response.message);
+    }
+
+    setUserPosts([...response.userPosts]);
+    setSavedPosts([...response.savedPosts]);
+    console.log(response);
+  };
 
   const handleLogout = async () => {
     const response = await logout();
@@ -25,6 +44,10 @@ function ProfilePage() {
     localStorage.removeItem("token");
     navigate("/login");
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <div className="profilePage">
@@ -53,11 +76,25 @@ function ProfilePage() {
             <h1>My List</h1>
             <button onClick={() => navigate("/add")}>Create New Post</button>
           </div>
-          <List />
+
+          {loading ? (
+            <h2>Loading...</h2>
+          ) : userPosts.length > 0 ? (
+            <List data={userPosts} />
+          ) : (
+            <h2>No posts found</h2>
+          )}
+
           <div className="title">
             <h1>Saved List</h1>
           </div>
-          <List />
+          {loading ? (
+            <h2>Loading...</h2>
+          ) : savedPosts.length > 0 ? (
+            <List data={savedPosts} />
+          ) : (
+            <h2>No posts saved</h2>
+          )}
         </div>
       </div>
       <div className="chatContainer">
