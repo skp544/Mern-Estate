@@ -7,17 +7,22 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext, useEffect, useState } from "react";
 import { profilePosts } from "../../api/user";
+import { getChats } from "../../api/chat";
 
 function ProfilePage() {
   const navigate = useNavigate();
   const { updateUser, currentUser } = useContext(AuthContext);
   const [userPosts, setUserPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
+  const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     const response = await profilePosts();
+    const chatResponse = await getChats();
+
+    setChats([...chatResponse.chats]);
 
     setLoading(false);
 
@@ -27,7 +32,6 @@ function ProfilePage() {
 
     setUserPosts([...response.userPosts]);
     setSavedPosts([...response.savedPosts]);
-    console.log(response);
   };
 
   const handleLogout = async () => {
@@ -99,7 +103,13 @@ function ProfilePage() {
       </div>
       <div className="chatContainer">
         <div className="wrapper">
-          <Chat />
+          {loading ? (
+            <h2>Loading...</h2>
+          ) : chats.length > 0 ? (
+            <Chat chats={chats} />
+          ) : (
+            <h2>No chats found</h2>
+          )}
         </div>
       </div>
     </div>
